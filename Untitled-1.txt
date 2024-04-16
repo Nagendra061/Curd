@@ -1,0 +1,202 @@
+user name: nagendra
+password: nagendra@123
+access key: AKIAQ3EGUNO2XZPI2XWA
+secret access key: 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
+bucket name: finalyear-project
+AWS Region: Asia Pacific (Mumbai) ap-south-1
+
+{
+    "Version": "2012-10-17",
+    "Statement":[
+    {
+    "Sid": "PolicyForAllowUploadWithACL",    
+    "Effect": "Allow",
+    "Principal": "*",
+    "Action": "s3:PutObject",
+    "Resource":"arn:aws:s3:::finalyear-project"
+    },
+    {   
+    "Sid": "PolicyForPublicReaD",
+    "Effect": "Allow",
+    "Principal": "*",
+    "Action": "s3:GetObject",
+    "Resource":"arn:aws:s3:::finalyear-project"
+    },
+    ]
+}
+
+_______________________________________________________________________________
+_______________________________________________________________________________
+
+
+require('dotenv').config();
+
+
+import express from 'express';
+const app = express();
+
+app.listen(3000);
+
+
+import { config, S3 } from 'aws-sdk';
+import multer from 'multer';
+import multers3 from 'multer-s3';
+
+config.update({
+    secretAccessKey: process.env.SECRET_KEY,
+    accessKeyId: process.env.ACCESS_KEY,
+    region: process.env.REGION,
+})
+
+const BUCKET_NAME = process.env.BUCKET_NAME;
+const s3 = new S3();
+
+const upload = multer({
+    storage: multers3({
+        s3: s3,
+        bucket: BUCKET_NAME,
+        metadata: function (req, file, cb) {
+            cb(null, {fieldName: file.fieldname});
+          },
+          key: function (req, file, cb) {
+            // cb(null, Date.now().toString())
+            cb(null, file.originalname)
+          }
+    })
+});
+
+app.post('/upload', upload.single('file'), async function (req, res, next) {
+    res.send('Successfully uploaded ' + req.file.location + ' location!');
+});
+
+_______________________________________________________________________________
+_______________________________________________________________________________
+
+/* Aws s3 Configuration
+var region = ""; 	// Region
+var accessKeyId = "";  	// Access key id
+var secretAccessKey = ""; 	// Secret access key.
+var bucketName = "";  	// Bucket name on AWS S3 server
+
+AWS.Config.update({
+    region: region,
+    Credentials:new AWS.Credentials(accessKeyId, secretAccessKey),
+});
+
+var s3  = new AWS.S3();*/
+
+_______________________________________________________________________________
+_______________________________________________________________________________
+
+/*Aws s3 Configuration
+var region = "ap-south-1" 	// Region
+var accessKeyId = "AKIAQ3EGUNO2XZPI2XWA"	// Access key id
+var secretAccessKey = "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" 	// Secret access key.
+var bucketName = "finalyear-project"  	// Bucket name on AWS S3 server
+
+AWS.config.update({
+    region:region,
+    Credentials:new AWS.Credentials(accessKeyId, secretAccessKey)
+});
+
+var s3  = new AWS.S3()
+
+// function to refresh the file list in the table
+
+/*function refreshFileList(bucketname) {
+    var tableBody = document.getElementById("#fileTable  tbody");
+    tableBody.innerHTML= "",
+    
+    
+
+
+
+    s3.listobjectsV2({Bucket:bucketName},(err, data) => {
+        if (err) {
+            console.log("Error fetching file list: ", err );
+            
+        } 
+        else{
+        
+            data.Contents.forEach( ( object ) =>{
+                var fileRow = document.createElement( 'tr' );
+
+                var fileNameCell = document.createElement( 'td' );   
+                fileNameCell.textContent  = object.Key ;
+                fileRow.appendChild(fileNameCell);
+  
+                var fileSizeCell=document.createElement("td");
+                fileSizeCell.textContent = object.size;
+                fileRow.appendChild(fileSizeCell);
+
+                var downloadCell =  document.createElement('td');
+                var downloadLink = document.createElement("a");
+                downloadLink.href = s3.getSignedUrl('getObject', {
+                    Bucket: bucketName, 
+                    Key: object.Key,
+                });
+                downloadLink.textContent ="Download";
+                downloadCell.appendChild(downloadLink);
+                fileRow.appendChild(downloadCell);
+
+                var deleteCell = document.createElement('td');
+                var deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.addEventListener('click', ()=>{
+                    deleteFile(bucketName, object.Key);
+                });
+
+                deleteCell.appendChild(deleteButton);
+                fileRow.appendChild(deleteCell);
+    
+                tableBody.appendChild(fileRow);
+            })
+        }
+    });
+
+//}
+//Function to upload files to s3 bucket
+
+function uploadFile(bucketName) {
+    let files= document.getElementById( 'fileInput' ).files;
+    
+    var fileCount = files.length;
+    
+    for (var i = 0; i < fileCount; i++) {
+        var file = files[i];
+        var params = {
+            Bucket: bucketName,
+            Key: file.name,
+            Body: file,
+        };
+        s3.upload(params, (err, data) => {
+            if (err) {
+                console.log("Error uploading file: ", err);
+                alert('Failed to Upload File');
+            } else {
+                //  console.log("Successfully uploaded
+                // image", data.Location);
+                console.log("File Uploaded successfully: ",data.location);
+                refreshFileList(bucketName);
+               
+            }
+        });
+    }
+}
+// Function to delete a file From the S3 bucket
+function deleteFile(bucketName, key){
+    var params = {
+        Bucket: bucketName, 
+        Key: key
+    };
+    s3.deleteObject(params, (err, data)  => {
+        if  (err) {
+            console.log("Error deletingfile: ", err);
+            } else {
+                console.log("File deleted Successfully, ");
+                refreshFileList(bucketName);
+            
+           }
+    });
+}
+refreshFileList("finalyear-project");*/
